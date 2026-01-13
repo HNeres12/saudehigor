@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_logs: {
+        Row: {
+          carb_level: string | null
+          created_at: string
+          day_type: string
+          fasting_completed: boolean
+          fasting_end: string | null
+          fasting_start: string | null
+          fasting_target_hours: number
+          had_sweets: boolean
+          id: string
+          log_date: string
+          notes: string | null
+          protein_high: boolean
+          sweets_after_meal: boolean | null
+          updated_at: string
+          user_id: string
+          workouts: string[]
+        }
+        Insert: {
+          carb_level?: string | null
+          created_at?: string
+          day_type?: string
+          fasting_completed?: boolean
+          fasting_end?: string | null
+          fasting_start?: string | null
+          fasting_target_hours?: number
+          had_sweets?: boolean
+          id?: string
+          log_date?: string
+          notes?: string | null
+          protein_high?: boolean
+          sweets_after_meal?: boolean | null
+          updated_at?: string
+          user_id: string
+          workouts?: string[]
+        }
+        Update: {
+          carb_level?: string | null
+          created_at?: string
+          day_type?: string
+          fasting_completed?: boolean
+          fasting_end?: string | null
+          fasting_start?: string | null
+          fasting_target_hours?: number
+          had_sweets?: boolean
+          id?: string
+          log_date?: string
+          notes?: string | null
+          protein_high?: boolean
+          sweets_after_meal?: boolean | null
+          updated_at?: string
+          user_id?: string
+          workouts?: string[]
+        }
+        Relationships: []
+      }
       habits: {
         Row: {
           completed_days: string[]

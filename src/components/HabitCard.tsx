@@ -1,9 +1,9 @@
 import { Habit } from '@/types/habit';
-import { getHabitProgress, getDaysRemaining, getFrequencyLabel, getHabitDates } from '@/lib/habitUtils';
+import { getHabitProgress, getDaysRemaining, getFrequencyLabel, getHabitDates, getPeriodLabel } from '@/lib/habitUtils';
 import { ProgressCircle } from './ProgressCircle';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Check, Flame, Calendar, Trash2 } from 'lucide-react';
+import { Check, Flame, Calendar, Trash2, Target } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -20,6 +20,10 @@ export function HabitCard({ habit, onToggleDay, onDelete }: HabitCardProps) {
   const habitDates = getHabitDates(habit);
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const todayCompleted = habit.completedDays.includes(todayStr);
+  
+  const periodLabel = getPeriodLabel(habit.frequency.type);
+  const showPeriodProgress = habit.frequency.type === 'weekly' || habit.frequency.type === 'monthly';
+  const periodComplete = progress.completedThisPeriod >= progress.targetForPeriod;
 
   return (
     <Card className="p-6 shadow-card hover:shadow-card-hover transition-all duration-300 gradient-card border-0 animate-slide-up">
@@ -39,13 +43,27 @@ export function HabitCard({ habit, onToggleDay, onDelete }: HabitCardProps) {
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
             <span className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4" />
-              {habit.duration} dias
+              {habit.durationDays} dias
             </span>
             <span className="text-muted-foreground/50">•</span>
             <span>{getFrequencyLabel(habit.frequency)}</span>
             <span className="text-muted-foreground/50">•</span>
             <span>{daysRemaining > 0 ? `${daysRemaining} dias restantes` : 'Concluído!'}</span>
           </div>
+
+          {/* Period progress for weekly/monthly */}
+          {showPeriodProgress && (
+            <div className={cn(
+              "flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm",
+              periodComplete ? "bg-success-light text-success" : "bg-secondary"
+            )}>
+              <Target className="w-4 h-4" />
+              <span>
+                {progress.completedThisPeriod}/{progress.targetForPeriod} {periodLabel}
+                {periodComplete && " ✓"}
+              </span>
+            </div>
+          )}
 
           {/* Today's check button */}
           <Button
@@ -65,7 +83,7 @@ export function HabitCard({ habit, onToggleDay, onDelete }: HabitCardProps) {
         <div className="flex flex-col items-center gap-2">
           <ProgressCircle percentage={progress.percentage} size="md" />
           <span className="text-xs text-muted-foreground">
-            {progress.completedDays}/{progress.totalDays} dias
+            {progress.completedDays}/{progress.totalDays}
           </span>
         </div>
       </div>
@@ -76,23 +94,23 @@ export function HabitCard({ habit, onToggleDay, onDelete }: HabitCardProps) {
           Histórico
         </p>
         <div className="flex flex-wrap gap-1.5">
-          {habitDates.slice(0, 30).map(({ date, dateStr, isToday, isPast, shouldComplete }) => {
+          {habitDates.slice(0, 42).map(({ date, dateStr, isToday, isPast, shouldComplete }) => {
             const isCompleted = habit.completedDays.includes(dateStr);
-            const isMissed = isPast && shouldComplete && !isCompleted;
+            const isMissed = isPast && shouldComplete && !isCompleted && habit.frequency.type === 'daily';
 
             return (
               <button
                 key={dateStr}
                 onClick={() => onToggleDay(habit.id, dateStr)}
-                disabled={!shouldComplete}
                 title={format(date, 'dd/MM', { locale: ptBR })}
                 className={cn(
                   'w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-medium transition-all duration-200',
-                  !shouldComplete && 'bg-muted/50 text-muted-foreground/30 cursor-not-allowed',
+                  !shouldComplete && habit.frequency.type === 'custom' && 'bg-muted/50 text-muted-foreground/30',
                   shouldComplete && !isCompleted && !isPast && 'bg-secondary text-secondary-foreground hover:bg-primary/20',
-                  shouldComplete && isCompleted && 'bg-primary text-primary-foreground',
+                  isCompleted && 'bg-primary text-primary-foreground',
                   isMissed && 'bg-destructive/10 text-destructive',
-                  isToday && !isCompleted && 'ring-2 ring-primary ring-offset-1'
+                  isToday && !isCompleted && 'ring-2 ring-primary ring-offset-1',
+                  habit.frequency.type !== 'custom' && !isCompleted && 'bg-secondary text-secondary-foreground hover:bg-primary/20'
                 )}
               >
                 {isCompleted ? (
@@ -104,6 +122,11 @@ export function HabitCard({ habit, onToggleDay, onDelete }: HabitCardProps) {
             );
           })}
         </div>
+        {habitDates.length > 42 && (
+          <p className="text-xs text-muted-foreground mt-2">
+            +{habitDates.length - 42} dias restantes
+          </p>
+        )}
       </div>
 
       {/* Delete button */}

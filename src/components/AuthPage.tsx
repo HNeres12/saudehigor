@@ -49,9 +49,9 @@ export function AuthPage() {
           <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center shadow-glow mb-4">
             <Leaf className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Novos Hábitos</h1>
+          <h1 className="text-2xl font-bold text-foreground">Eu estou saudável</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Transforme sua vida, um dia de cada vez
+            Cuide da sua saúde, um hábito de cada vez
           </p>
         </div>
 

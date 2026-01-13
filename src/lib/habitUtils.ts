@@ -33,7 +33,6 @@ export function shouldCompleteOnDay(habit: Habit, date: Date): boolean {
     return customDays?.includes(dayOfWeek) ?? false;
   }
   
-  // For daily, weekly, monthly - all days are potential completion days
   return true;
 }
 
@@ -50,7 +49,6 @@ export function getCompletedInPeriod(habit: Habit, date: Date): number {
     periodStart = startOfMonth(date);
     periodEnd = endOfMonth(date);
   } else {
-    // For daily, just check this day
     const dateStr = format(date, 'yyyy-MM-dd');
     return habit.completedDays.includes(dateStr) ? 1 : 0;
   }
@@ -62,31 +60,22 @@ export function getCompletedInPeriod(habit: Habit, date: Date): number {
 }
 
 export function getHabitProgress(habit: Habit): HabitProgress {
-  const startDate = parseISO(habit.startDate);
-  const endDate = addDays(startDate, habit.durationDays - 1);
-  const today = new Date();
-  
   const { type, timesPerPeriod } = habit.frequency;
+  const today = new Date();
   
   let totalDays = 0;
   
   if (type === 'daily') {
-    // Count all days
-    let currentDate = startDate;
-    while (!isAfter(currentDate, endDate)) {
-      totalDays++;
-      currentDate = addDays(currentDate, 1);
-    }
+    totalDays = habit.durationDays;
   } else if (type === 'weekly') {
-    // Calculate weeks and multiply by times per week
     const weeks = Math.ceil(habit.durationDays / 7);
     totalDays = weeks * timesPerPeriod;
   } else if (type === 'monthly') {
-    // Calculate months and multiply by times per month
     const months = Math.ceil(habit.durationDays / 30);
     totalDays = months * timesPerPeriod;
   } else if (type === 'custom') {
-    // Count specific days
+    const startDate = parseISO(habit.startDate);
+    const endDate = addDays(startDate, habit.durationDays - 1);
     let currentDate = startDate;
     while (!isAfter(currentDate, endDate)) {
       if (shouldCompleteOnDay(habit, currentDate)) {
@@ -99,25 +88,8 @@ export function getHabitProgress(habit: Habit): HabitProgress {
   const completedDays = habit.completedDays.length;
   const percentage = totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0;
   
-  // Calculate current streak (simplified - consecutive completions)
-  let streak = 0;
-  const sortedDays = [...habit.completedDays].sort().reverse();
-  
-  for (let i = 0; i < sortedDays.length; i++) {
-    if (i === 0) {
-      streak = 1;
-    } else {
-      const prevDate = parseISO(sortedDays[i - 1]);
-      const currDate = parseISO(sortedDays[i]);
-      const diff = differenceInDays(prevDate, currDate);
-      
-      if (diff <= 7) { // Allow gaps up to a week for weekly habits
-        streak++;
-      } else {
-        break;
-      }
-    }
-  }
+  // Calculate streak
+  let streak = habit.completedDays.length;
   
   // Get completed this period
   const completedThisPeriod = getCompletedInPeriod(habit, today);
@@ -126,7 +98,7 @@ export function getHabitProgress(habit: Habit): HabitProgress {
     totalDays, 
     completedDays, 
     currentStreak: streak, 
-    percentage,
+    percentage: Math.min(percentage, 100),
     targetForPeriod: type === 'daily' ? 1 : timesPerPeriod,
     completedThisPeriod
   };
@@ -139,27 +111,6 @@ export function getDaysRemaining(habit: Habit): number {
   
   if (isAfter(today, endDate)) return 0;
   return differenceInDays(endDate, today) + 1;
-}
-
-export function getHabitDates(habit: Habit): { date: Date; dateStr: string; isToday: boolean; isPast: boolean; shouldComplete: boolean }[] {
-  const startDate = parseISO(habit.startDate);
-  const today = new Date();
-  const todayStr = format(today, 'yyyy-MM-dd');
-  
-  const dates = [];
-  for (let i = 0; i < habit.durationDays; i++) {
-    const date = addDays(startDate, i);
-    const dateStr = format(date, 'yyyy-MM-dd');
-    dates.push({
-      date,
-      dateStr,
-      isToday: dateStr === todayStr,
-      isPast: isBefore(date, today) && dateStr !== todayStr,
-      shouldComplete: shouldCompleteOnDay(habit, date),
-    });
-  }
-  
-  return dates;
 }
 
 export function getPeriodLabel(type: FrequencyType): string {

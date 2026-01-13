@@ -5,7 +5,8 @@ import { AddHabitDialog } from '@/components/AddHabitDialog';
 import { EmptyState } from '@/components/EmptyState';
 import { AuthPage } from '@/components/AuthPage';
 import { DailyTracker } from '@/components/DailyTracker';
-import { Leaf, TrendingUp, LogOut, Loader2, Calendar, ListChecks, Heart } from 'lucide-react';
+import { HistoryTracker } from '@/components/HistoryTracker';
+import { Leaf, TrendingUp, LogOut, Loader2, Calendar, ListChecks, Heart, History } from 'lucide-react';
 import { getHabitProgress } from '@/lib/habitUtils';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -74,10 +75,14 @@ const Index = () => {
       <main className="container max-w-3xl mx-auto px-4 py-6">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="today" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Hoje
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-2">
+              <History className="w-4 h-4" />
+              Histórico
             </TabsTrigger>
             <TabsTrigger value="habits" className="flex items-center gap-2">
               <ListChecks className="w-4 h-4" />
@@ -88,6 +93,11 @@ const Index = () => {
           {/* Today's tracker */}
           <TabsContent value="today" className="mt-0">
             <DailyTracker />
+          </TabsContent>
+
+          {/* History */}
+          <TabsContent value="history" className="mt-0">
+            <HistoryTracker />
           </TabsContent>
 
           {/* Habits list */}

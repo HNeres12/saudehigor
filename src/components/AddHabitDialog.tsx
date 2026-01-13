@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Sparkles } from 'lucide-react';
-import { Frequency, Habit } from '@/types/habit';
+import { Plus, Sparkles, Calendar, Repeat } from 'lucide-react';
+import { FrequencyType, Habit } from '@/types/habit';
 import { getDayName } from '@/lib/habitUtils';
 import { format } from 'date-fns';
 
@@ -14,29 +14,52 @@ interface AddHabitDialogProps {
   onAddHabit: (habit: Omit<Habit, 'id' | 'completedDays' | 'createdAt'>) => void;
 }
 
+const DURATION_PRESETS = [
+  { value: 7, label: '1 semana' },
+  { value: 21, label: '21 dias' },
+  { value: 30, label: '1 mês' },
+  { value: 90, label: '3 meses' },
+  { value: 365, label: '1 ano' },
+];
+
 export function AddHabitDialog({ onAddHabit }: AddHabitDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
-  const [duration, setDuration] = useState<20 | 30>(30);
-  const [frequency, setFrequency] = useState<Frequency>('daily');
+  const [durationDays, setDurationDays] = useState(30);
+  const [customDuration, setCustomDuration] = useState('');
+  const [useCustomDuration, setUseCustomDuration] = useState(false);
+  const [frequencyType, setFrequencyType] = useState<FrequencyType>('daily');
+  const [timesPerPeriod, setTimesPerPeriod] = useState(1);
   const [customDays, setCustomDays] = useState<number[]>([1, 2, 3, 4, 5]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
+    const finalDuration = useCustomDuration && customDuration 
+      ? parseInt(customDuration) 
+      : durationDays;
+
+    if (!finalDuration || finalDuration < 1) return;
+
     onAddHabit({
       name: name.trim(),
-      duration,
-      frequency,
-      customDays: frequency === 'custom' ? customDays : undefined,
+      durationDays: finalDuration,
+      frequency: {
+        type: frequencyType,
+        timesPerPeriod: frequencyType === 'daily' ? 1 : timesPerPeriod,
+        customDays: frequencyType === 'custom' ? customDays : undefined,
+      },
       startDate: format(new Date(), 'yyyy-MM-dd'),
     });
 
     // Reset form
     setName('');
-    setDuration(30);
-    setFrequency('daily');
+    setDurationDays(30);
+    setCustomDuration('');
+    setUseCustomDuration(false);
+    setFrequencyType('daily');
+    setTimesPerPeriod(1);
     setCustomDays([1, 2, 3, 4, 5]);
     setOpen(false);
   };
@@ -55,7 +78,7 @@ export function AddHabitDialog({ onAddHabit }: AddHabitDialogProps) {
           Novo Hábito
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Sparkles className="w-5 h-5 text-primary" />
@@ -73,7 +96,7 @@ export function AddHabitDialog({ onAddHabit }: AddHabitDialogProps) {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Meditar, Ler, Exercitar..."
+              placeholder="Ex: Visitar meus pais, Meditar, Ler..."
               className="h-12"
               autoFocus
             />
@@ -81,63 +104,88 @@ export function AddHabitDialog({ onAddHabit }: AddHabitDialogProps) {
 
           {/* Duration */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">
-              Por quantos dias?
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-primary" />
+              Por quanto tempo?
             </Label>
-            <RadioGroup
-              value={duration.toString()}
-              onValueChange={(v) => setDuration(parseInt(v) as 20 | 30)}
-              className="flex gap-3"
-            >
+            
+            {/* Preset options */}
+            <div className="flex flex-wrap gap-2">
+              {DURATION_PRESETS.map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  onClick={() => {
+                    setDurationDays(preset.value);
+                    setUseCustomDuration(false);
+                  }}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    !useCustomDuration && durationDays === preset.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-primary/20'
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Custom duration */}
+            <div className="flex items-center gap-3">
               <label
-                className={`flex-1 flex items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  duration === 20
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50'
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all ${
+                  useCustomDuration
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-primary/20'
                 }`}
               >
-                <RadioGroupItem value="20" className="sr-only" />
-                <div className="text-center">
-                  <span className="block text-2xl font-bold text-foreground">20</span>
-                  <span className="text-sm text-muted-foreground">dias</span>
-                </div>
+                <Checkbox
+                  checked={useCustomDuration}
+                  onCheckedChange={(checked) => setUseCustomDuration(!!checked)}
+                  className="sr-only"
+                />
+                Outro:
               </label>
-              <label
-                className={`flex-1 flex items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  duration === 30
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <RadioGroupItem value="30" className="sr-only" />
-                <div className="text-center">
-                  <span className="block text-2xl font-bold text-foreground">30</span>
-                  <span className="text-sm text-muted-foreground">dias</span>
-                </div>
-              </label>
-            </RadioGroup>
+              <Input
+                type="number"
+                min="1"
+                value={customDuration}
+                onChange={(e) => {
+                  setCustomDuration(e.target.value);
+                  setUseCustomDuration(true);
+                }}
+                placeholder="Ex: 60"
+                className="w-24 h-10"
+              />
+              <span className="text-sm text-muted-foreground">dias</span>
+            </div>
           </div>
 
           {/* Frequency */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Repeat className="w-4 h-4 text-primary" />
               Com qual frequência?
             </Label>
+            
             <RadioGroup
-              value={frequency}
-              onValueChange={(v) => setFrequency(v as Frequency)}
+              value={frequencyType}
+              onValueChange={(v) => {
+                setFrequencyType(v as FrequencyType);
+                if (v === 'daily') setTimesPerPeriod(1);
+              }}
               className="grid grid-cols-2 gap-2"
             >
               {[
                 { value: 'daily', label: 'Todos os dias' },
-                { value: 'weekdays', label: 'Dias úteis' },
-                { value: 'weekends', label: 'Fins de semana' },
-                { value: 'custom', label: 'Personalizado' },
+                { value: 'weekly', label: 'Por semana' },
+                { value: 'monthly', label: 'Por mês' },
+                { value: 'custom', label: 'Dias específicos' },
               ].map((option) => (
                 <label
                   key={option.value}
                   className={`flex items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all text-sm font-medium ${
-                    frequency === option.value
+                    frequencyType === option.value
                       ? 'border-primary bg-primary/5 text-foreground'
                       : 'border-border text-muted-foreground hover:border-primary/50'
                   }`}
@@ -148,8 +196,25 @@ export function AddHabitDialog({ onAddHabit }: AddHabitDialogProps) {
               ))}
             </RadioGroup>
 
+            {/* Times per period selector */}
+            {(frequencyType === 'weekly' || frequencyType === 'monthly') && (
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
+                <Input
+                  type="number"
+                  min="1"
+                  max={frequencyType === 'weekly' ? 7 : 31}
+                  value={timesPerPeriod}
+                  onChange={(e) => setTimesPerPeriod(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-16 h-10 text-center"
+                />
+                <span className="text-sm text-foreground">
+                  {timesPerPeriod === 1 ? 'vez' : 'vezes'} por {frequencyType === 'weekly' ? 'semana' : 'mês'}
+                </span>
+              </div>
+            )}
+
             {/* Custom days selector */}
-            {frequency === 'custom' && (
+            {frequencyType === 'custom' && (
               <div className="flex justify-between pt-2">
                 {[0, 1, 2, 3, 4, 5, 6].map((day) => (
                   <label
@@ -176,7 +241,7 @@ export function AddHabitDialog({ onAddHabit }: AddHabitDialogProps) {
           <Button
             type="submit"
             className="w-full h-12 gradient-primary text-primary-foreground font-semibold"
-            disabled={!name.trim() || (frequency === 'custom' && customDays.length === 0)}
+            disabled={!name.trim() || (frequencyType === 'custom' && customDays.length === 0)}
           >
             <Sparkles className="w-4 h-4 mr-2" />
             Começar Jornada

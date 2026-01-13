@@ -22,6 +22,8 @@ export function DailyTracker() {
     setDayType,
     startFasting,
     endFasting,
+    resetFasting,
+    setManualFasting,
     addWorkout,
     removeWorkout,
     toggleSweets,
@@ -80,6 +82,8 @@ export function DailyTracker() {
         log={log}
         onStart={startFasting}
         onEnd={endFasting}
+        onReset={resetFasting}
+        onManualEntry={setManualFasting}
       />
 
       {/* Workout tracker */}

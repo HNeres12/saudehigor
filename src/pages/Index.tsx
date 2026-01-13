@@ -47,8 +47,8 @@ const Index = () => {
                 <Leaf className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">Novos Hábitos</h1>
-                <p className="text-xs text-muted-foreground">Transforme sua vida, um dia de cada vez</p>
+                <h1 className="text-xl font-bold text-foreground">Eu estou saudável</h1>
+                <p className="text-xs text-muted-foreground">Cuide da sua saúde, um hábito de cada vez</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

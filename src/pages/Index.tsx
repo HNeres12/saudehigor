@@ -4,13 +4,17 @@ import { HabitCard } from '@/components/HabitCard';
 import { AddHabitDialog } from '@/components/AddHabitDialog';
 import { EmptyState } from '@/components/EmptyState';
 import { AuthPage } from '@/components/AuthPage';
-import { Leaf, TrendingUp, LogOut, Loader2 } from 'lucide-react';
+import { DailyTracker } from '@/components/DailyTracker';
+import { Leaf, TrendingUp, LogOut, Loader2, Calendar, ListChecks, Heart } from 'lucide-react';
 import { getHabitProgress } from '@/lib/habitUtils';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState } from 'react';
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { habits, loading: habitsLoading, addHabit, toggleDay, deleteHabit } = useHabits(user?.id);
+  const [activeTab, setActiveTab] = useState('today');
 
   // Show auth page if not logged in
   if (authLoading) {
@@ -44,7 +48,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
-                <Leaf className="w-5 h-5 text-primary-foreground" />
+                <Heart className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-foreground">Eu estou saudável</h1>
@@ -52,7 +56,7 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <AddHabitDialog onAddHabit={addHabit} />
+              {activeTab === 'habits' && <AddHabitDialog onAddHabit={addHabit} />}
               <Button
                 variant="ghost"
                 size="icon"
@@ -68,59 +72,80 @@ const Index = () => {
       </header>
 
       <main className="container max-w-3xl mx-auto px-4 py-6">
-        {/* Loading state */}
-        {habitsLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <>
-            {/* Stats bar */}
-            {habits.length > 0 && (
-              <div className="flex gap-4 mb-6 animate-fade-in">
-                <div className="flex-1 p-4 rounded-2xl bg-card shadow-card">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <TrendingUp className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">{totalCompleted}</p>
-                      <p className="text-xs text-muted-foreground">Dias completados</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1 p-4 rounded-2xl bg-card shadow-card">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
-                      <span className="text-xl">🔥</span>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">{totalStreak}</p>
-                      <p className="text-xs text-muted-foreground">Maior sequência</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="today" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Hoje
+            </TabsTrigger>
+            <TabsTrigger value="habits" className="flex items-center gap-2">
+              <ListChecks className="w-4 h-4" />
+              Hábitos
+            </TabsTrigger>
+          </TabsList>
 
-            {/* Habits list or empty state */}
-            {habits.length === 0 ? (
-              <EmptyState />
-            ) : (
-              <div className="space-y-4">
-                {habits.map((habit, index) => (
-                  <div key={habit.id} style={{ animationDelay: `${index * 100}ms` }}>
-                    <HabitCard
-                      habit={habit}
-                      onToggleDay={toggleDay}
-                      onDelete={deleteHabit}
-                    />
-                  </div>
-                ))}
+          {/* Today's tracker */}
+          <TabsContent value="today" className="mt-0">
+            <DailyTracker />
+          </TabsContent>
+
+          {/* Habits list */}
+          <TabsContent value="habits" className="mt-0">
+            {habitsLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
+            ) : (
+              <>
+                {/* Stats bar */}
+                {habits.length > 0 && (
+                  <div className="flex gap-4 mb-6 animate-fade-in">
+                    <div className="flex-1 p-4 rounded-2xl bg-card shadow-card">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-foreground">{totalCompleted}</p>
+                          <p className="text-xs text-muted-foreground">Dias completados</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex-1 p-4 rounded-2xl bg-card shadow-card">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                          <span className="text-xl">🔥</span>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-foreground">{totalStreak}</p>
+                          <p className="text-xs text-muted-foreground">Maior sequência</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Habits list or empty state */}
+                {habits.length === 0 ? (
+                  <EmptyState />
+                ) : (
+                  <div className="space-y-4">
+                    {habits.map((habit, index) => (
+                      <div key={habit.id} style={{ animationDelay: `${index * 100}ms` }}>
+                        <HabitCard
+                          habit={habit}
+                          onToggleDay={toggleDay}
+                          onDelete={deleteHabit}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Footer */}

@@ -146,6 +146,24 @@ export function useDailyLog(userId: string | undefined, date: Date = new Date())
     toast({ title: 'Jejum finalizado! 🎉' });
   };
 
+  const resetFasting = async () => {
+    await createOrUpdateLog({
+      fastingStart: null,
+      fastingEnd: null,
+      fastingCompleted: false,
+    });
+    toast({ title: 'Jejum reiniciado' });
+  };
+
+  const setManualFasting = async (startTime: string, endTime?: string) => {
+    await createOrUpdateLog({
+      fastingStart: startTime,
+      fastingEnd: endTime || null,
+      fastingCompleted: !!endTime,
+    });
+    toast({ title: endTime ? 'Jejum registrado! 🎉' : 'Jejum iniciado! 🕐' });
+  };
+
   const addWorkout = async (workout: string) => {
     const currentWorkouts = log?.workouts || [];
     await createOrUpdateLog({
@@ -174,6 +192,8 @@ export function useDailyLog(userId: string | undefined, date: Date = new Date())
     setDayType,
     startFasting,
     endFasting,
+    resetFasting,
+    setManualFasting,
     addWorkout,
     removeWorkout,
     toggleSweets,

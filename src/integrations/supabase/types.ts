@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      habits: {
+        Row: {
+          completed_days: string[]
+          created_at: string
+          duration_days: number
+          frequency_custom_days: number[] | null
+          frequency_times_per_period: number
+          frequency_type: string
+          id: string
+          name: string
+          start_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_days?: string[]
+          created_at?: string
+          duration_days?: number
+          frequency_custom_days?: number[] | null
+          frequency_times_per_period?: number
+          frequency_type?: string
+          id?: string
+          name: string
+          start_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_days?: string[]
+          created_at?: string
+          duration_days?: number
+          frequency_custom_days?: number[] | null
+          frequency_times_per_period?: number
+          frequency_type?: string
+          id?: string
+          name?: string
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

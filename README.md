@@ -1,73 +1,74 @@
-# Welcome to your Lovable project
+# Novos Hábitos
 
-## Project info
+Aplicativo de acompanhamento de saúde e hábitos: criação de hábitos com metas e frequência, log diário (jejum intermitente, treinos, nutrição) e histórico.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Stack
 
-## How can I edit this code?
+- **Frontend:** Vite + React + TypeScript
+- **UI:** Tailwind CSS + shadcn/ui
+- **Backend:** Supabase (PostgreSQL + Auth)
+- **Estado/Dados:** React Query, React Hook Form, Zod
 
-There are several ways of editing your application.
+## Rodando localmente
 
-**Use Lovable**
+### Pré-requisitos
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- [Node.js](https://nodejs.org/) 18 ou superior
+- npm (vem junto com o Node)
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Passo a passo
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 1. Clonar o repositório
+git clone https://github.com/HNeres12/saudehigor.git
+cd saudehigor
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Instalar dependências
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
+# 3. Configurar variáveis de ambiente
+cp .env.example .env
+# Edite o .env e preencha com as credenciais do seu projeto Supabase
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 4. Rodar em modo de desenvolvimento
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+O app vai abrir em `http://localhost:8080`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Variáveis de ambiente
 
-**Use GitHub Codespaces**
+Crie um arquivo `.env` na raiz do projeto com:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sua-anon-key-aqui
+```
 
-## What technologies are used for this project?
+Você encontra esses valores no painel do Supabase em **Project Settings → API**.
 
-This project is built with:
+## Scripts disponíveis
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- `npm run dev` — modo desenvolvimento (com hot reload)
+- `npm run build` — build de produção
+- `npm run preview` — pré-visualiza o build de produção localmente
+- `npm run lint` — roda o linter
+- `npm test` — roda os testes
 
-## How can I deploy this project?
+## Estrutura
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+```
+src/
+  components/      Componentes da aplicação
+  hooks/           Hooks customizados (useAuth, useHabits, useDailyLog...)
+  integrations/    Configuração do Supabase
+  pages/           Páginas (Index, NotFound)
+  types/           Tipos TypeScript
+  test/            Testes
+supabase/
+  migrations/      Migrations SQL do banco
+```
 
-## Can I connect a custom domain to my Lovable project?
+## Deploy
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+O projeto pode ser deployado em qualquer serviço que suporte aplicações Vite/React estáticas (Vercel, Netlify, Cloudflare Pages). Lembre-se de configurar as variáveis de ambiente no painel do serviço escolhido.
